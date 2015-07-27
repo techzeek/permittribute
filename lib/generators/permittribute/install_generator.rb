@@ -8,12 +8,14 @@ module Permittribute
     def configure_application
       application <<-APP
 
-    config.eager_load_paths += ["\#{Rails.root}/lib"]
+    config.eager_load_paths += ["\#{Rails.root}/lib/permittribute"]
       APP
     end
 
     def generate_config
-      template "permittributes.rb", "lib/permittributes.rb"
+      template "default.rb", "lib/permittribute/default.rb"
+      template "admin.rb", "lib/permittribute/admin.rb"
+      template "api.rb", "lib/permittribute/api.rb"
     end
   end
 end

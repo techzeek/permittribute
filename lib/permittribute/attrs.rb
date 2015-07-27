@@ -4,39 +4,36 @@ module Permittribute
   class Attrs
     include ::Permittributes
 
-    @@group_by_roles = { }
-    @@role_attributes = []
+    @@attributes_group_by_roles = {}
+    @@defined_meth_names = Hash.new {|k,v| k[v] = []}
 
     class << self
       def all
-        @@role_attributes
+        @@defined_meth_names.values.flatten
       end
 
       def configure_with_role(role, &block)
-        @@role_attributes = []
+        @@attributes_group_by_roles[role] ||= OpenStruct.new
 
-        @@group_by_roles[role] = OpenStruct.new
+        yield @@attributes_group_by_roles[role]
 
-        yield @@group_by_roles[role]
-
-        define_all_attribute_methods
-        @@role_attributes.uniq!
+        define_role_attribute_methods(role)
+        @@defined_meth_names[role].uniq!
       end
 
-      def define_all_attribute_methods
-        @@group_by_roles.each do |role, attributes|
-          attributes.each_pair do |attribute, params|
-            define_role_attribute_method(role, attribute, params)
-          end
+      def define_role_attribute_methods(role)
+        @@attributes_group_by_roles[role].each_pair do |attribute, params|
+          define_role_attribute_method(role, attribute, params)
         end
       end
 
       def define_role_attribute_method(role, attribute, params)
-        meth_name = "#{role}_#{attribute}".to_sym
+        meth_name = (role == :default ? attribute : "#{role}_#{attribute}").to_sym
         define_singleton_method meth_name do
-          params
+          @@attributes_group_by_roles[role].send(attribute.to_sym)
         end
-        @@role_attributes << meth_name
+
+        @@defined_meth_names[role] << meth_name
       end
     end
 

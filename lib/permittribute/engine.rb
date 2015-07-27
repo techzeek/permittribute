@@ -10,10 +10,9 @@ module Permittribute
     end
 
     initializer "permittribute.configure", group: :all do |app|
-      app_config = Rails.root.join('lib', 'permittributes.rb').to_s
-      if File.exist?( app_config )
+      Dir[Rails.root.join('lib', 'permittribute/*.rb').to_s].each do |c|
         app.config.to_prepare do
-          Rails.configuration.cache_classes ? require(app_config) : load(app_config)
+          Rails.configuration.cache_classes ? require(c) : load(c)
         end
       end
     end
