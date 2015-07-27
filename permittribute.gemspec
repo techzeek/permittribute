@@ -7,9 +7,9 @@ Gem::Specification.new do |spec|
   spec.name          = "permittribute"
   spec.version       = Permittribute::VERSION
   spec.authors       = ["Priyank Gupta"]
-  spec.email         = ["priyank.gupta@vinsol.com"]
-  spec.summary       = %q{TODO: Write a short summary. Required.}
-  spec.description   = %q{TODO: Write a longer description. Optional.}
+  spec.email         = ["priyankgupta1988@gmail.com", "priyankgupta1988@yahoo.com"]
+  spec.summary       = %q{ Reuse Permitted Attributes and group them at a single reference file }
+  spec.description   = spec.summary
   spec.homepage      = ""
   spec.license       = "MIT"
 

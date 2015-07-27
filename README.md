@@ -1,8 +1,52 @@
 # Permittribute
 
-TODO: Write a gem description
+We sometimes face scenarios where we need same permitted attributes for a model in different controllers and end up re-writing all attributes again (violating DRY).
 
-## Installation
+Permittribute is meant to:
+
+- reuse same permitted attributes at different locations/controllers.
+- group permitted attributes at a single reference point.
+
+## Usage
+
+This is used with <a href='https://github.com/rails/strong_parameters'>rails/strong_parameters</a> which is now incorporated since rails 4.x.
+
+
+We use strong parameters something like:
+
+    # in controllers/articles_controller.rb
+    def article_params
+      params.require(:article).permit([:title, :author_id, :published_at, :publication])
+    end
+
+    # in controllers/books_controller.rb
+    def book_params
+      params.require(:book).permit([:title, :summary, :author_id, :published_at, :publication, :price, :status])
+    end
+
+With <b>Permittribute</b> we can do:
+
+    # in lib/permittributes.rb
+    module Permittributes
+      configure do
+        @@articles = [:title, :author_id, :published_at, :publication]
+        @@books = [:title, :summary, :author_id, :published_at, :publication, :price, :status]
+      end
+    end
+
+And
+
+    # in controllers/articles_controller.rb
+    def article_params
+      params.require(:article).permit(permittribute_articles)
+    end
+
+    # in controllers/books_controller.rb
+    def book_params
+      params.require(:book).permit(permittribute_books)
+    end
+
+## Getting Started
 
 Add this line to your application's Gemfile:
 
@@ -16,9 +60,19 @@ Or install it yourself as:
 
     $ gem install permittribute
 
-## Usage
+After you have installed Permittribute or added it to your Gemfile, you need to run the generator:
 
-TODO: Write usage instructions here
+    $ rails generate permittribute:install
+
+This will
+
+- create a configuration file, `lib/permittributes.rb`. This contains some example configurations.
+- adds `config.eager_load_paths += ["#{Rails.root}/lib"]` in `config/application.rb`. To eager load `lib/permittributes.rb`.
+
+## TODO
+
+- Add scoping like admin, api etc.
+- Add specs.
 
 ## Contributing
 
@@ -27,28 +81,3 @@ TODO: Write usage instructions here
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create a new Pull Request
-
-
-Add
-In application.rb
-  config.to_prepare do
-    ["../lib/permittributes.rb"].collect do |path|
-      Dir.glob(File.join(File.dirname(__FILE__), path))
-    end.flatten.each do |c|
-      Rails.configuration.cache_classes ? require(c) : load(c)
-    end
-  end
-
-  config.eager_load_paths += ["#{Rails.root}/lib"]
-
-In application_controller.rb
-  include Permittribute::StrongParams
-
-create file lib/permittributes.rb
-  module Permittributes
-    configure do
-      @@articles = [:title, :summary, :author_id, :published_at, :publication]
-      @@books = [:title, :summary, :author_id, :published_at, :publication, :price, :status]
-      @@authors = [:name, :language, :age]
-    end
-  end
