@@ -4,24 +4,39 @@ module Permittribute
   class Attrs
     include ::Permittributes
 
-    def self.all
-      class_variables.map do |class_var|
-        :"#{class_var.to_s.gsub!('@@', '')}"
+    @@group_by_roles = { }
+    @@role_attributes = []
+
+    class << self
+      def all
+        @@role_attributes
       end
-    end
 
-    mattr_reader *self.all
+      def configure_with_role(role, &block)
+        @@role_attributes = []
 
-    def self.method_missing(method_name, *args, &block)
-      class_var = :"@@#{method_name}"
-      if class_variables.include?(class_var)
-        all << method_name
-        self.class.send :define_method, method_name do
-          class_variable_get(class_var)
+        @@group_by_roles[role] = OpenStruct.new
+
+        yield @@group_by_roles[role]
+
+        define_all_attribute_methods
+        @@role_attributes.uniq!
+      end
+
+      def define_all_attribute_methods
+        @@group_by_roles.each do |role, attributes|
+          attributes.each_pair do |attribute, params|
+            define_role_attribute_method(role, attribute, params)
+          end
         end
-        send(method_name)
-      else
-        super
+      end
+
+      def define_role_attribute_method(role, attribute, params)
+        meth_name = "#{role}_#{attribute}".to_sym
+        define_singleton_method meth_name do
+          params
+        end
+        @@role_attributes << meth_name
       end
     end
 
