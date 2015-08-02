@@ -1,15 +1,15 @@
-require 'permittribute/permittributes'
-
 module Permittribute
   class Attrs
-    include ::Permittributes
-
     @@attributes_group_by_roles = {}
     @@defined_meth_names = Hash.new {|k,v| k[v] = []}
 
     class << self
       def all
         @@defined_meth_names.values.flatten
+      end
+
+      def defined_meth_names_for_role(role)
+        @@defined_meth_names[role] || []
       end
 
       def configure_with_role(role, &block)
@@ -29,11 +29,15 @@ module Permittribute
 
       def define_role_attribute_method(role, attribute, params)
         meth_name = (role == :default ? attribute : "#{role}_#{attribute}").to_sym
-        define_singleton_method meth_name do
-          @@attributes_group_by_roles[role].send(attribute.to_sym)
-        end
+        unless respond_to? meth_name
+          instance_eval <<-eometh
+            def #{meth_name}
+              @@attributes_group_by_roles['#{role}'.to_sym].send('#{attribute}'.to_sym)
+            end
+          eometh
 
-        @@defined_meth_names[role] << meth_name
+          @@defined_meth_names[role] << meth_name
+        end
       end
     end
 

@@ -5,7 +5,8 @@ We sometimes face scenarios where we need same permitted attributes for a model 
 Permittribute is meant to:
 
 - reuse same permitted attributes at different locations/controllers.
-- group permitted attributes at a single reference point.
+- scope permitted attributes base on roles like admin, api etc.
+- group permitted attributes at a single reference point in their respective scopes.
 
 ## Usage
 
@@ -19,19 +20,34 @@ We use strong parameters something like:
       params.require(:article).permit([:title, :author_id, :published_at, :publication])
     end
 
-    # in controllers/books_controller.rb
-    def book_params
-      params.require(:book).permit([:title, :summary, :author_id, :published_at, :publication, :price, :status])
+    # in controllers/admin/articles_controller.rb
+    def article_params
+      params.require(:article).permit([:title, :author_id, :published_at, :publication])
+    end
+
+    # in controllers/api/articles_controller.rb
+    def article_params
+      params.require(:article).permit([:title, :author_id, :published_at, :publication])
     end
 
 With <b>Permittribute</b> we can do:
 
-    # in lib/permittributes.rb
-    module Permittributes
-      configure do
-        @@articles = [:title, :author_id, :published_at, :publication]
-        @@books = [:title, :summary, :author_id, :published_at, :publication, :price, :status]
-      end
+    # in lib/permittribute/default.rb
+    Permittribute.configure do
+      config.articles = [:title, :author_id, :published_at, :publication]
+      # Use as #permittribute_articles
+    end
+
+    # in lib/permittribute/admin.rb
+    Permittribute.configure(:admin) do
+      config.articles = [:title, :author_id, :published_at, :publication]
+      # Use as #permittribute_admin_articles
+    end
+
+    # in lib/permittribute/api.rb
+    Permittribute.configure(:api) do
+      config.articles = [:title, :author_id, :published_at, :publication]
+      # Use as #permittribute_api_articles
     end
 
 And
@@ -41,9 +57,14 @@ And
       params.require(:article).permit(permittribute_articles)
     end
 
-    # in controllers/books_controller.rb
-    def book_params
-      params.require(:book).permit(permittribute_books)
+    # in controllers/admin/articles_controller.rb
+    def article_params
+      params.require(:article).permit(permittribute_admin_articles)
+    end
+
+    # in controllers/api/articles_controller.rb
+    def article_params
+      params.require(:article).permit(permittribute_api_articles)
     end
 
 ## Getting Started
@@ -66,12 +87,11 @@ After you have installed Permittribute or added it to your Gemfile, you need to 
 
 This will
 
-- create a configuration file, `lib/permittributes.rb`. This contains some example configurations.
-- adds `config.eager_load_paths += ["#{Rails.root}/lib"]` in `config/application.rb`. To eager load `lib/permittributes.rb`.
+- create three configurations file, `lib/permittribute/default.rb`, `lib/permittribute/admin.rb` and `lib/permittribute/api.rb`. These contains some example configurations.
+- adds `config.eager_load_paths += ["#{Rails.root}/lib/permittribute"]` in `config/application.rb`. To eager load created config files.
 
 ## TODO
 
-- Add scoping like admin, api etc.
 - Add specs.
 
 ## Contributing

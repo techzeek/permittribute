@@ -1,4 +1,4 @@
-Permittributes.configure(:admin) do |config|
+Permittribute.configure(:admin) do |config|
   # add class variables for permitted attributes
   # For example:
   # config.articles = [:title, :summary, :author_id, :published_at, :publication]
